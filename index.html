@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Калькулятор</title>
+<style>
+  :root {
+    --bg: #1a1a2e;
+    --panel: #16213e;
+    --accent: #e94560;
+    --accent2: #0f3460;
+    --text: #eaeaea;
+    --btn: #0f3460;
+    --btn-hover: #16406e;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg);
+    font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+  }
+  .calculator {
+    background: var(--panel);
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    width: 320px;
+  }
+  .display {
+    background: #0d0d1a;
+    border-radius: 12px;
+    padding: 20px 15px;
+    margin-bottom: 15px;
+    text-align: right;
+    overflow: hidden;
+  }
+  .display .prev {
+    color: #888;
+    font-size: 16px;
+    min-height: 20px;
+  }
+  .display .curr {
+    color: var(--text);
+    font-size: 36px;
+    font-weight: 600;
+    word-break: break-all;
+  }
+  .buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+  button {
+    border: none;
+    border-radius: 12px;
+    padding: 18px 0;
+    font-size: 20px;
+    color: var(--text);
+    background: var(--btn);
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+  }
+  button:hover { background: var(--btn-hover); }
+  button:active { transform: scale(0.95); }
+  button.op { background: var(--accent2); color: #ffd166; }
+  button.equals { background: var(--accent); grid-column: span 2; }
+  button.clear { background: #c0392b; }
+  button.zero { grid-column: span 2; }
+</style>
+</head>
+<body>
+
+<div class="calculator">
+  <div class="display">
+    <div class="prev" id="prev"></div>
+    <div class="curr" id="curr">0</div>
+  </div>
+  <div class="buttons">
+    <button class="clear" onclick="clearAll()">C</button>
+    <button class="op" onclick="deleteLast()">⌫</button>
+    <button class="op" onclick="chooseOperation('%')">%</button>
+    <button class="op" onclick="chooseOperation('÷')">÷</button>
+
+    <button onclick="appendNumber('7')">7</button>
+    <button onclick="appendNumber('8')">8</button>
+    <button onclick="appendNumber('9')">9</button>
+    <button class="op" onclick="chooseOperation('×')">×</button>
+
+    <button onclick="appendNumber('4')">4</button>
+    <button onclick="appendNumber('5')">5</button>
+    <button onclick="appendNumber('6')">6</button>
+    <button class="op" onclick="chooseOperation('-')">-</button>
+
+    <button onclick="appendNumber('1')">1</button>
+    <button onclick="appendNumber('2')">2</button>
+    <button onclick="appendNumber('3')">3</button>
+    <button class="op" onclick="chooseOperation('+')">+</button>
+
+    <button class="zero" onclick="appendNumber('0')">0</button>
+    <button onclick="appendNumber('.')">.</button>
+    <button class="equals" onclick="calculate()">=</button>
+  </div>
+</div>
+
+<script>
+  let currentInput = '0';
+  let previousInput = '';
+  let operation = null;
+
+  const currEl = document.getElementById('curr');
+  const prevEl = document.getElementById('prev');
+
+  function updateDisplay() {
+    currEl.textContent = currentInput;
+    prevEl.textContent = previousInput + (operation ? ' ' + operation : '');
+  }
+
+  function appendNumber(num) {
+    if (num === '.' && currentInput.includes('.')) return;
+    if (currentInput === '0' && num !== '.') {
+      currentInput = num;
+    } else {
+      currentInput += num;
+    }
+    updateDisplay();
+  }
+
+  function chooseOperation(op) {
+    if (operation !== null) calculate();
+    previousInput = currentInput;
+    operation = op;
+    currentInput = '0';
+    updateDisplay();
+  }
+
+  function calculate() {
+    if (operation === null || previousInput === '') return;
+    const prev = parseFloat(previousInput);
+    const curr = parseFloat(currentInput);
+    let result;
+    switch (operation) {
+      case '+': result = prev + curr; break;
+      case '-': result = prev - curr; break;
+      case '×': result = prev * curr; break;
+      case '÷': result = curr === 0 ? 'Ошибка' : prev / curr; break;
+      case '%': result = prev % curr; break;
+      default: return;
+    }
+    currentInput = result.toString();
+    operation = null;
+    previousInput = '';
+    updateDisplay();
+  }
+
+  function clearAll() {
+    currentInput = '0';
+    previousInput = '';
+    operation = null;
+    updateDisplay();
+  }
+
+  function deleteLast() {
+    currentInput = currentInput.length > 1 ? currentInput.slice(0, -1) : '0';
+    updateDisplay();
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key >= '0' && e.key <= '9') appendNumber(e.key);
+    if (e.key === '.') appendNumber('.');
+    if (e.key === '+') chooseOperation('+');
+    if (e.key === '-') chooseOperation('-');
+    if (e.key === '*') chooseOperation('×');
+    if (e.key === '/') { e.preventDefault(); chooseOperation('÷'); }
+    if (e.key === 'Enter' || e.key === '=') calculate();
+    if (e.key === 'Backspace') deleteLast();
+    if (e.key === 'Escape') clearAll();
+  });
+</script>
+
+</body>
+</html>
